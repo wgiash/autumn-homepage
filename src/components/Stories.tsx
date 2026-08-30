@@ -115,14 +115,42 @@ export function Stories() {
   const mstripRef = useRef<HTMLDivElement | null>(null)
   const [trackW, setTrackW] = useState(0)
 
+  /* the mobile strip loops: three copies of the deck, seated on the middle
+     one, silently re-centered whenever a swipe settles near either end */
+  const normTimer = useRef<number | null>(null)
+  const autoScrollRef = useRef(false)
+  const lastUserScroll = useRef(0)
+  useEffect(() => {
+    if (!isMobile) return
+    const el = mstripRef.current
+    if (!el) return
+    const step = el.clientWidth * 0.82 + 12
+    el.scrollTo({ left: step * N, behavior: 'auto' })
+  }, [isMobile])
+
   /* autoplay only while the section is actually on screen */
   useEffect(() => {
-    const el = trackRef.current
+    const el = trackRef.current ?? mstripRef.current
     if (!el) return
     const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { threshold: 0.4 })
     io.observe(el)
     return () => io.disconnect()
-  }, [])
+  }, [isMobile])
+
+  /* the strip keeps the desktop's 9s cadence, yielding while the reader
+     is mid-swipe */
+  useEffect(() => {
+    if (!isMobile || !inView) return
+    const iv = window.setInterval(() => {
+      const el = mstripRef.current
+      if (!el) return
+      if (performance.now() - lastUserScroll.current < 3000) return
+      const step = el.clientWidth * 0.82 + 12
+      autoScrollRef.current = true
+      el.scrollTo({ left: step * (Math.round(el.scrollLeft / step) + 1), behavior: 'smooth' })
+    }, 9000)
+    return () => clearInterval(iv)
+  }, [isMobile, inView])
   useEffect(() => {
     const el = trackRef.current
     if (!el) return
@@ -213,33 +241,52 @@ export function Stories() {
         <div
           className="svc-mstrip"
           ref={mstripRef}
+          onTouchStart={() => {
+            autoScrollRef.current = false
+            lastUserScroll.current = performance.now()
+          }}
           onScroll={(e) => {
             const el = e.currentTarget
             const step = el.clientWidth * 0.82 + 12
-            const i = Math.max(0, Math.min(N - 1, Math.round(el.scrollLeft / step)))
-            if (i !== active) {
+            const j = Math.round(el.scrollLeft / step)
+            const idx = ((j % N) + N) % N
+            if (idx !== active) {
               changeRef.current = 'hover' /* caption swaps quietly on swipe */
-              setActive(i)
+              setActive(idx)
             }
+            if (!autoScrollRef.current) lastUserScroll.current = performance.now()
+            if (normTimer.current) clearTimeout(normTimer.current)
+            /* once the swipe settles, drift back to the middle copy unseen */
+            normTimer.current = window.setTimeout(() => {
+              autoScrollRef.current = false
+              const jj = Math.round(el.scrollLeft / step)
+              if (jj < N || jj >= 2 * N)
+                el.scrollTo({ left: step * (N + ((jj % N) + N) % N), behavior: 'auto' })
+            }, 140)
           }}
         >
-          {SLIDES.map((s, i) => (
-            <div
-              key={s.label}
-              className={`svc-mslide${i === active ? ' is-active' : ''}`}
-              style={{ backgroundImage: `url(${s.img})` }}
-              onClick={() => {
-                /* tap the featured card to advance; tap a peeking one to seat it */
-                const el = mstripRef.current
-                if (!el) return
-                const step = el.clientWidth * 0.82 + 12
-                const target = i === active ? (active + 1) % N : i
-                el.scrollTo({ left: step * target, behavior: 'smooth' })
-              }}
-            >
-              {i === active && <span className="svc-slide-label">{s.label}</span>}
-            </div>
-          ))}
+          {[...SLIDES, ...SLIDES, ...SLIDES].map((s, j) => {
+            const idx = j % N
+            return (
+              <div
+                key={`${s.label}-${j}`}
+                className={`svc-mslide${idx === active ? ' is-active' : ''}`}
+                style={{ backgroundImage: `url(${s.img})` }}
+                onClick={() => {
+                  /* tap the featured card to advance; tap a peeking one to seat it */
+                  const el = mstripRef.current
+                  if (!el) return
+                  const step = el.clientWidth * 0.82 + 12
+                  const here = Math.round(el.scrollLeft / step)
+                  const target = idx === active ? here + 1 : j
+                  autoScrollRef.current = true
+                  el.scrollTo({ left: step * target, behavior: 'smooth' })
+                }}
+              >
+                {idx === active && <span className="svc-slide-label">{s.label}</span>}
+              </div>
+            )
+          })}
         </div>
       ) : (
       <div
