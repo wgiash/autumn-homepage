@@ -120,12 +120,25 @@ export function Stories() {
   const normTimer = useRef<number | null>(null)
   const autoScrollRef = useRef(false)
   const lastUserScroll = useRef(0)
+  const touchingRef = useRef(false)
+  /* the real slide pitch, measured — a derived formula drifts from what
+     flex-basis actually resolves to and lands every target off-seat */
+  const stepOf = (el: HTMLElement) => {
+    const a = el.children[0] as HTMLElement | undefined
+    const b = el.children[1] as HTMLElement | undefined
+    return a && b ? b.offsetLeft - a.offsetLeft : el.clientWidth
+  }
+  /* a slide's exact rest position — measured, so nothing accumulates */
+  const seatOf = (el: HTMLElement, j: number) => {
+    const a = el.children[0] as HTMLElement | undefined
+    const t = el.children[j] as HTMLElement | undefined
+    return a && t ? t.offsetLeft - a.offsetLeft : 0
+  }
   useEffect(() => {
     if (!isMobile) return
     const el = mstripRef.current
     if (!el) return
-    const step = el.clientWidth * 0.82 + 12
-    el.scrollTo({ left: step * N, behavior: 'auto' })
+    el.scrollTo({ left: seatOf(el, N), behavior: 'auto' })
   }, [isMobile])
 
   /* autoplay only while the section is actually on screen */
@@ -137,20 +150,6 @@ export function Stories() {
     return () => io.disconnect()
   }, [isMobile])
 
-  /* the strip keeps the desktop's 9s cadence, yielding while the reader
-     is mid-swipe */
-  useEffect(() => {
-    if (!isMobile || !inView) return
-    const iv = window.setInterval(() => {
-      const el = mstripRef.current
-      if (!el) return
-      if (performance.now() - lastUserScroll.current < 3000) return
-      const step = el.clientWidth * 0.82 + 12
-      autoScrollRef.current = true
-      el.scrollTo({ left: step * (Math.round(el.scrollLeft / step) + 1), behavior: 'smooth' })
-    }, 9000)
-    return () => clearInterval(iv)
-  }, [isMobile, inView])
   useEffect(() => {
     const el = trackRef.current
     if (!el) return
@@ -159,7 +158,7 @@ export function Stories() {
     const ro = new ResizeObserver(measure)
     ro.observe(el)
     return () => ro.disconnect()
-  }, [])
+  }, [isMobile]) /* the track remounts when the layout flips — re-observe */
 
   /* rotate the queue; items that loop past the front leave a ghost being
      pushed out one side while their real selves enter from the other */
@@ -242,12 +241,15 @@ export function Stories() {
           className="svc-mstrip"
           ref={mstripRef}
           onTouchStart={() => {
+            touchingRef.current = true
             autoScrollRef.current = false
             lastUserScroll.current = performance.now()
           }}
+          onTouchEnd={() => { touchingRef.current = false }}
+          onTouchCancel={() => { touchingRef.current = false }}
           onScroll={(e) => {
             const el = e.currentTarget
-            const step = el.clientWidth * 0.82 + 12
+            const step = stepOf(el)
             const j = Math.round(el.scrollLeft / step)
             const idx = ((j % N) + N) % N
             if (idx !== active) {
@@ -261,7 +263,7 @@ export function Stories() {
               autoScrollRef.current = false
               const jj = Math.round(el.scrollLeft / step)
               if (jj < N || jj >= 2 * N)
-                el.scrollTo({ left: step * (N + ((jj % N) + N) % N), behavior: 'auto' })
+                el.scrollTo({ left: seatOf(el, N + ((jj % N) + N) % N), behavior: 'auto' })
             }, 140)
           }}
         >
@@ -271,19 +273,43 @@ export function Stories() {
               <div
                 key={`${s.label}-${j}`}
                 className={`svc-mslide${idx === active ? ' is-active' : ''}`}
-                style={{ backgroundImage: `url(${s.img})` }}
                 onClick={() => {
                   /* tap the featured card to advance; tap a peeking one to seat it */
                   const el = mstripRef.current
                   if (!el) return
-                  const step = el.clientWidth * 0.82 + 12
+                  const step = stepOf(el)
                   const here = Math.round(el.scrollLeft / step)
-                  const target = idx === active ? here + 1 : j
+                  const delta = idx === active ? 1 : j - here
+                  /* a fast run outpaces the settle re-center — shift back to
+                     the middle copy first (identical pixels), so there is
+                     always runway and the loop never rewinds */
+                  const eq = N + ((here % N) + N) % N
+                  if (eq !== here)
+                    el.scrollTo({ left: el.scrollLeft + (seatOf(el, eq) - seatOf(el, here)), behavior: 'auto' })
                   autoScrollRef.current = true
-                  el.scrollTo({ left: step * target, behavior: 'smooth' })
+                  el.scrollTo({ left: seatOf(el, eq + delta), behavior: 'smooth' })
                 }}
               >
+                <div className="svc-mslide-fill" style={{ backgroundImage: `url(${s.img})` }} />
                 {idx === active && <span className="svc-slide-label">{s.label}</span>}
+                {idx === active && !reduced && (
+                  <div className="svc-progress">
+                    <div
+                      key={active}
+                      className={`svc-progress-fill${!inView ? ' is-paused' : ''}`}
+                      onAnimationEnd={() => {
+                        if (!inView || touchingRef.current) return
+                        const el = mstripRef.current
+                        if (!el) return
+                        const step = stepOf(el)
+                        /* three clones carry this bar — only the seated one drives */
+                        if (j !== Math.round(el.scrollLeft / step)) return
+                        autoScrollRef.current = true
+                        el.scrollTo({ left: seatOf(el, Math.round(el.scrollLeft / step) + 1), behavior: 'smooth' })
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             )
           })}

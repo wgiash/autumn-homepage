@@ -2194,6 +2194,9 @@ body {
   padding: 0 var(--margin);
   overflow-x: auto;
   scroll-snap-type: x mandatory;
+  /* the container owns the inset — scroll-margin on children is what
+     Safari drops, parking cards flush to the screen edge */
+  scroll-padding-left: var(--margin);
   scrollbar-width: none;
 }
 .svc-mstrip::-webkit-scrollbar { display: none; }
@@ -2202,9 +2205,14 @@ body {
   flex: 0 0 82%;
   height: 340px;
   scroll-snap-align: start;
-  scroll-margin-left: var(--margin);
+}
+/* the image layer carries the settle scale — a transform on the snap item
+   itself would warp the snap geometry and land every card off-seat */
+.svc-mslide-fill {
+  position: absolute;
+  inset: 0;
   background-size: cover;
   background-position: 50%;
   transition: scale 450ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
-.svc-mslide:not(.is-active) { scale: 0.94; }
+.svc-mslide:not(.is-active) .svc-mslide-fill { scale: 0.94; }
