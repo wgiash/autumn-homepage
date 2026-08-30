@@ -3,6 +3,7 @@
    (the reference's trailing-words-dim reveal). Copy is placeholder. */
 import { useRef } from 'react'
 import { motion, useReducedMotion, useScroll, useTransform, type MotionValue } from 'motion/react'
+import { useLang } from '../lib/i18n'
 
 const TEXT =
   'Autumn is a marketing team for independent inns. We put your rooms in front of travelers searching Google, pay for the ads ourselves, and point every guest to book on your own website. When a guest we found books a stay, we take 13%. If no one books, you pay nothing.'
@@ -23,6 +24,7 @@ function Word({
 }
 
 export function Statement() {
+  const { t } = useLang()
   /* track the paragraph itself — the section is viewport-tall with the
      text centered, so section geometry finishes the fill far too early */
   const pRef = useRef<HTMLParagraphElement | null>(null)
@@ -31,12 +33,13 @@ export function Statement() {
     target: pRef,
     offset: ['start 0.92', 'end 0.55'],
   })
-  const words = TEXT.split(' ')
+  const text = t(TEXT)
+  const words = text.split(' ')
   return (
     <section className="svc stmt">
       <p ref={pRef} className="stmt-text">
         {reduced
-          ? TEXT
+          ? text
           : words.map((w, i) => (
               <Word
                 key={i}

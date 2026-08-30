@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { motion, useScroll, useTransform } from 'motion/react'
 import { ASCII_AUTUMN, ASCII_COLS } from './footer-ascii'
 import { LEAF_SPRITES } from './footer-leaves'
+import { useLang } from '../lib/i18n'
 
 /* deterministic scatter — stable across renders and HMR; half the leaves
    mirror and each lands at its own angle so the sprite doesn't stamp */
@@ -21,6 +22,7 @@ const LEAVES = Array.from({ length: 14 }, (_, i) => ({
 }))
 
 export function Footer() {
+  const { t } = useLang()
   /* scroll parallax: three depths drift at different rates while the
      css fall animation keeps running inside each layer */
   const ref = useRef<HTMLDivElement | null>(null)
@@ -82,14 +84,14 @@ export function Footer() {
         </div>
         <div className="footer-cols">
           <nav className="footer-col" aria-label="Site">
-            <a className="nav-link" href="#how-it-works">How it Works</a>
-            <a className="nav-link" href="#services">Services</a>
-            <a className="nav-link" href="#results">Results</a>
-            <a className="nav-link" href="#flagship">Flagship Program</a>
+            <a className="nav-link" href="#how-it-works">{t('How it Works')}</a>
+            <a className="nav-link" href="#services">{t('Services')}</a>
+            <a className="nav-link" href="#results">{t('Results')}</a>
+            <a className="nav-link" href="#flagship">{t('Flagship Program')}</a>
           </nav>
           <nav className="footer-col" aria-label="Company">
-            <a className="nav-link" href="mailto:hello@autumnplatform.com">Careers</a>
-            <a className="nav-link" href="mailto:hello@autumnplatform.com">Contact</a>
+            <a className="nav-link" href="mailto:hello@autumnplatform.com">{t('Careers')}</a>
+            <a className="nav-link" href="mailto:hello@autumnplatform.com">{t('Contact')}</a>
             <a className="nav-link" href="#">Instagram</a>
           </nav>
         </div>

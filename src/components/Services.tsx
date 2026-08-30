@@ -2,6 +2,7 @@
    floating mid-frame (an email + its reply, a post, a search snippet + an
    AI answer), header then description below. Inns match the vignette. */
 import { SrStar, SrSpark } from './SearchVignette'
+import { useLang } from '../lib/i18n'
 /* the reply glyph — a drawn stroke rising out of the reply, pointing on */
 function ReplyArrow() {
   return (
@@ -184,9 +185,10 @@ const WIDE = [
 ] as const
 
 export function Services() {
+  const { t } = useLang()
   return (
     <section id="services" className="svc">
-      <h2 className="svc-h2">The rest of your marketing, handled.</h2>
+      <h2 className="svc-h2">{t('The rest of your marketing, handled.')}</h2>
 
       <div className="svc-cards">
         {WIDE.map((c) => (
@@ -194,7 +196,7 @@ export function Services() {
             <div className="svc-card-img is-headed">
               <header className="svc-card-inhead">
                 <h3 className="svc-card-title">
-                  {c.lead} <span className="svc-dim">{c.rest}</span>
+                  {t(c.lead)} <span className="svc-dim">{t(c.rest)}</span>
                 </h3>
               </header>
               {c.art}
@@ -207,7 +209,7 @@ export function Services() {
               {/* conversational: the service and its promise, inside the card */}
               <header className="svc-card-inhead">
                 <h3 className="svc-card-title">
-                  {c.lead} <span className="svc-dim">{c.rest}</span>
+                  {t(c.lead)} <span className="svc-dim">{t(c.rest)}</span>
                 </h3>
               </header>
               {c.art}

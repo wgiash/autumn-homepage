@@ -1,3 +1,4 @@
+import { useLang } from '../lib/i18n'
 /* Transcribed 1:1 from Paper: base nav (artboard 2-0 frame 5-0),
    scrolled island (artboard 43/57 frame 44-0): width compresses to 720,
    top margin appears, padding tightens, glass surface fades in, and the
@@ -66,10 +67,9 @@ function Arrow() {
 }
 
 export function Nav() {
+  const { lang, setLang, t } = useLang()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
-  /* visual toggle only — no actual localization behind it */
-  const [lang, setLang] = useState<'en' | 'sp'>('en')
   const navRef = useRef<HTMLElement | null>(null)
   const pillRef = useRef<HTMLDivElement | null>(null)
   const [naturalW, setNaturalW] = useState<number | null>(null)
@@ -155,9 +155,9 @@ export function Nav() {
         </a>
         <div className="nav-right">
           <nav className="nav-links" aria-label="Main">
-            <a className="nav-link" href="#how-it-works">How it Works</a>
-            <a className="nav-link" href="#results">Results</a>
-            <a className="nav-link" href="#careers">Careers</a>
+            <a className="nav-link" href="#how-it-works">{t('How it Works')}</a>
+            <a className="nav-link" href="#results">{t('Results')}</a>
+            <a className="nav-link" href="#careers">{t('Careers')}</a>
           </nav>
           <div className="nav-right" style={{ gap: 8 }}>
             <div className="lang">
@@ -169,14 +169,14 @@ export function Nav() {
               </button>
               <span className="sep">/</span>
               <button
-                className={`lang-opt${lang === 'sp' ? '' : ' dim'}`}
-                onClick={() => setLang('sp')}
+                className={`lang-opt${lang === 'es' ? '' : ' dim'}`}
+                onClick={() => setLang('es')}
               >
-                SP
+                ES
               </button>
             </div>
             <a className="btn-glass" href="#flagship">
-              Flagship Program
+              {t('Flagship Program')}
               <Arrow />
             </a>
             <button
@@ -195,11 +195,11 @@ export function Nav() {
         <nav className="nav-menu" aria-label="Menu">
           {MENU_LINKS.map(([label, href]) => (
             <a key={href} className="nav-menu-link" href={href} onClick={() => setMenuOpen(false)}>
-              {label}
+              {t(label)}
             </a>
           ))}
           <a className="btn-glass nav-menu-cta" href="#flagship" onClick={() => setMenuOpen(false)}>
-            Flagship Program
+            {t('Flagship Program')}
             <Arrow />
           </a>
         </nav>

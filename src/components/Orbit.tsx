@@ -7,6 +7,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { animate, motion, useMotionValue, useReducedMotion, useSpring, useTransform } from 'motion/react'
 import type { MotionStyle } from 'motion/react'
+import { useLang } from '../lib/i18n'
 
 const EASE = [0.22, 0.61, 0.36, 1] as const
 
@@ -255,6 +256,7 @@ function PostsCard({ on, style }: { on: boolean; style?: MotionStyle }) {
 }
 
 export function Orbit() {
+  const { t } = useLang()
   const reduced = useReducedMotion()
   const on = !reduced
 
@@ -345,7 +347,7 @@ export function Orbit() {
 
   return (
     <section className="svc orb-sec">
-      <h2 className="svc-h2 orb-h2">Meanwhile, at your inn.</h2>
+      <h2 className="svc-h2 orb-h2">{t('Meanwhile, at your inn.')}</h2>
       {/* the latch wrapper spans stage + bar only, so the sticky bar first
           appears at the stage's top edge */}
       <div className="orb-latch">

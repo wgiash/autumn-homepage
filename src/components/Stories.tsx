@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { Arrow } from './Nav'
+import { useLang } from '../lib/i18n'
 
 const EASE = [0.22, 0.61, 0.36, 1] as const
 const SWAP = {
@@ -89,6 +90,7 @@ function useMediaQuery(q: string) {
 }
 
 export function Stories() {
+  const { t } = useLang()
   const reduced = useReducedMotion()
   /* on mobile the conveyor gives way to a native swipe strip */
   const isMobile = useMediaQuery('(max-width: 640px)')
@@ -195,7 +197,7 @@ export function Stories() {
     <section id="results" className="svc">
       <div className="svc-head-row">
         <div>
-          <h2 className="svc-h2">Proof from properties like yours.</h2>
+          <h2 className="svc-h2">{t('Proof from properties like yours.')}</h2>
         </div>
         <div className="svc-nav-arrows">
           <button className="svc-arrow-btn is-prev" onClick={() => go(-1)} aria-label="Previous">
@@ -347,7 +349,7 @@ export function Stories() {
           </motion.p>
         </AnimatePresence>
         <a className="btn-glass" href="#flagship">
-          Join them
+          {t('Join them')}
           <Arrow />
         </a>
       </div>

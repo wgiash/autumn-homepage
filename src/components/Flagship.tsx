@@ -2,21 +2,22 @@
    point at. The terms are shown as the agreement artifact itself, in the
    cream dialect, instead of being claimed in marketing copy. */
 import { Arrow } from './Nav'
+import { useLang } from '../lib/i18n'
 
 export function Flagship() {
+  const { t } = useLang()
   return (
     <section id="flagship" className="svc flag">
       <div className="flag-copy">
-        <h2 className="svc-h2">The Flagship Program.</h2>
+        <h2 className="svc-h2">{t('The Flagship Program.')}</h2>
         <p className="flag-sub">
-          We run your Google marketing end to end and fund the ads ourselves.
-          Nothing up front, and nothing at all unless bookings arrive.
+          {t('We run your Google marketing end to end and fund the ads ourselves. Nothing up front, and nothing at all unless bookings arrive.')}
         </p>
         <a className="btn-glass" href="mailto:hello@autumnplatform.com">
-          Apply for the Flagship Program
+          {t('Apply for the Flagship Program')}
           <Arrow />
         </a>
-        <p className="flag-note">Now onboarding four properties for spring.</p>
+        <p className="flag-note">{t('Now onboarding four properties for spring.')}</p>
       </div>
       <div className="flag-visual">
         <div className="art-stage art-city">

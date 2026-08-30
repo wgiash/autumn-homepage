@@ -7,6 +7,7 @@
 import { useRef, useState } from 'react'
 import { AnimatePresence, motion, useScroll, useTransform, type MotionValue } from 'motion/react'
 import { SrStar, SrCheck, SrReply } from './SearchVignette'
+import { useLang } from '../lib/i18n'
 import { Arrow } from './Nav'
 
 const EASE = [0.22, 0.61, 0.36, 1] as const
@@ -251,10 +252,11 @@ const ARTS = [
 ] as const
 
 export function HowItWorks() {
+  const { t } = useLang()
   const [open, setOpen] = useState(0)
   return (
     <section id="how-it-works" className="svc hiw">
-      <h2 className="svc-h2 hiw-h2">How it works.</h2>
+      <h2 className="svc-h2 hiw-h2">{t('How it works.')}</h2>
       <div className="hiw-visual">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div key={open} className="hiw-img" {...SWAP}>
@@ -269,7 +271,7 @@ export function HowItWorks() {
           return (
             <div key={step.title} className={`hiw-item${isOpen ? ' is-open' : ''}`}>
               <button className="hiw-item-head" onClick={() => setOpen(i)}>
-                <span className={`hiw-item-title${isOpen ? '' : ' svc-dim'}`}>{step.title}</span>
+                <span className={`hiw-item-title${isOpen ? '' : ' svc-dim'}`}>{t(step.title)}</span>
               </button>
               <motion.div
                 className="hiw-item-body"
@@ -283,9 +285,9 @@ export function HowItWorks() {
                   animate={{ y: isOpen ? 0 : 8, opacity: isOpen ? 1 : 0 }}
                   transition={{ duration: 0.45, ease: EASE, delay: isOpen ? 0.1 : 0 }}
                 >
-                  <p>{step.body}</p>
+                  <p>{t(step.body)}</p>
                   <a className="btn-glass hiw-item-cta" href="#flagship">
-                    Flagship Program
+                    {t('Flagship Program')}
                     <Arrow />
                   </a>
                 </motion.div>
