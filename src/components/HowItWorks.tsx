@@ -79,10 +79,10 @@ const AD_TILES = [
   { head: 'Google Hotels', reach: '214 clicks', img: 'thumb-hit-3', style: { left: '3%', bottom: '0%', width: 62, zIndex: 3 } },
   { head: 'Google', reach: '8.2k reached', img: 'slide-7', style: { right: '3%', bottom: '-1%', width: 66, zIndex: 3 } },
   /* the deep field — specks receding into the air */
-  { head: 'Google Maps', reach: '1,890 views', img: 'thumb-3', style: { left: '24%', top: '3%', width: 30, zIndex: 0 } },
-  { head: 'Google Hotels', reach: '96 bookings', img: 'slide-3', style: { right: '24%', bottom: '2%', width: 26, zIndex: 0 } },
-  { head: 'Hotels', reach: '77', img: 'thumb-1', style: { left: '34%', bottom: '3%', width: 32, zIndex: 0 } },
-  { head: 'Google', reach: '5.4k', img: 'thumb-hit-6', style: { right: '35%', top: '2%', width: 28, zIndex: 0 } },
+  { head: 'Google Maps', reach: '1,890 views', img: 'slide-4', style: { left: '24%', top: '3%', width: 30, zIndex: 0 } },
+  { head: 'Google Hotels', reach: '96 bookings', img: 'slide-2', style: { right: '24%', bottom: '2%', width: 26, zIndex: 0 } },
+  { head: 'Hotels', reach: '77', img: 'slide-8', style: { left: '34%', bottom: '3%', width: 32, zIndex: 0 } },
+  { head: 'Google', reach: '5.4k', img: 'slide-5', style: { right: '35%', top: '2%', width: 28, zIndex: 0 } },
 ] as const
 
 function AdTile({ t, progress }: { t: (typeof AD_TILES)[number]; progress: MotionValue<number> }) {

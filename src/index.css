@@ -164,7 +164,6 @@ body {
   gap: 6px; /* layout is always tight — loose spacing exists only in flight */
   font-family: var(--font-sans);
   font-weight: 400;
-  cursor: pointer;
 }
 .sr-group {
   display: flex;
