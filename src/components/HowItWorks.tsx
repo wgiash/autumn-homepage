@@ -216,15 +216,15 @@ const ARTS = [
       </div>
       <div className="sr-hit-expand">
         <div className="sr-hit-subrow">
-          <span>Booked <span className="sr-dim64">· found on Google Maps</span></span>
+          <span>Alex J. <span className="sr-dim64">· found on Google Maps</span></span>
           <span className="sr-hit-time">3h ago</span>
         </div>
         <div className="sr-hit-subrow">
-          <span>Booked <span className="sr-dim64">· found on Google Ads</span></span>
+          <span>Marta S. <span className="sr-dim64">· found on Google Ads</span></span>
           <span className="sr-hit-time">2d ago</span>
         </div>
         <div className="sr-hit-subrow">
-          <span>Booked <span className="sr-dim64">· found on Google Hotel Ads</span></span>
+          <span>Devon R. <span className="sr-dim64">· found on Google Hotel Ads</span></span>
           <span className="sr-hit-time">Last week</span>
         </div>
       </div>
