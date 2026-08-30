@@ -1,0 +1,2177 @@
+@import "tailwindcss";
+
+/* ── self-hosted fonts (from local files; not-for-profit project) ── */
+@font-face {
+  font-family: "ABC Arizona Mix Trial";
+  src: url("/fonts/ABCArizonaMixTrial-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: "Helvetica Now Display";
+  src: url("/fonts/HelveticaNowDisplay-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: "Helvetica Now Display";
+  src: url("/fonts/HelveticaNowDisplay-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: "Helvetica Now Display";
+  src: url("/fonts/HelveticaNowDisplay-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: block;
+}
+
+/* ── Design tokens — transcribed 1:1 from Paper: "Jolly notebook" / artboard 2-0
+   "Cityscape evening scene" (1125×720). Values are the artboard's own. ── */
+:root {
+  /* color */
+  --ink-hero: color(display-p3 1 1 1);
+  --ink-hero-dim: color(display-p3 1 1 1 / 48%);
+  --hairline-hero: color(display-p3 1 1 1 / 16%);
+  --glass: linear-gradient(
+    in oklab 105.87deg,
+    oklab(100% 0 0 / 2%) 0.06%,
+    oklab(100% 0 0 / 0%) 100.06%
+  );
+
+  /* type — Paper file uses ABC Arizona Mix Trial (Light) + Helvetica Now Display (Light) */
+  --font-display: "ABC Arizona Mix Trial", Georgia, serif;
+  --font-sans: "Helvetica Now Display", Helvetica, system-ui, sans-serif;
+  --font-sans-light: "Helvetica Now Display", Helvetica, system-ui, sans-serif;
+  --weight-light: 300;
+
+  --text-h1: 32px;
+  --leading-h1: 1.1;
+  --text-wordmark: 20px;
+  --leading-wordmark: 24px;
+  --text-btn: 14px;
+  --leading-btn: 18px;
+  --text-nav: 13px;
+  --leading-nav: 16px;
+  --text-lang: 12px;
+  --leading-lang: 16px;
+  --tracking-display: -0.04em;
+
+  /* spacing / structure */
+  --margin: 120px;      /* artboard px-30 */
+  --nav-h: 60px;        /* artboard h-15 */
+  --gap-hero: 120px;    /* root gap-30: nav → copy block */
+  --gap-copy: 24px;     /* copy block: text group → button (Paper gap-6) */
+  --gap-copy-text: 16px; /* h1 → sub inside the text group (Paper gap-4) */
+  --gap-nav-groups: 48px;
+  --gap-links: 24px;
+  --gap-brand: 6px;
+  --btn-pad: 8px 12px;  /* py-2 px-3 */
+  --rule-w: 0.5px;
+  --copy-w: 246px;      /* w-61.5 */
+
+  /* extra dim over the plate, on top of the image's own grade — tune here */
+  --hero-dim: 0.18;
+
+  /* overall scale of the search vignette — one number, crisp re-layout */
+  --vignette-scale: 1.15;
+
+  /* plain artifact field — one step warmer than the page */
+  --field: color(display-p3 0.087 0.078 0.072); /* lifted off #131010, a half-step darker than before, same warm lean */
+
+  /* cream artifact surfaces — a complementary warm paper to the amber accent */
+  --cream: color(display-p3 0.86 0.82 0.75); /* muted parchment — sits closer to the dark ground */
+  --ink-cream: color(display-p3 0.05 0.05 0.05); /* white-ui ink */
+  --hairline-cream: color(display-p3 0.145 0.112 0.078 / 14%);
+  --amber-cream: color(display-p3 0.71 0.42 0.1); /* amber, inked for light ground */
+
+  /* section grid: 12 columns, 24px gutters, inside the 120px margins */
+  --grid-gap: 24px;
+  --frame-line: color(display-p3 1 1 1 / 8%); /* page frame + section rules, dimmer than UI hairlines */
+}
+
+body {
+  background: #131010; /* seams between fractional-height sections must never flash white */
+  font-family: var(--font-sans-light);
+  font-weight: var(--weight-light);
+  -webkit-font-smoothing: antialiased;
+  font-synthesis: none;
+}
+
+/* ── hero (artboard root) — layer sandwich ──
+   z0 plate (section bg) → z1 cutout (house, bottom-right) → z2 dim → z3 content.
+   Plate and cutout share the same 2688×1792 canvas, so identical
+   background-size/position keeps them registered at every viewport. */
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  /* nav is fixed (out of flow): its height + the 120 gap become padding */
+  padding-top: calc(var(--nav-h) + var(--gap-hero));
+  min-height: 100svh; /* artboard is 720 fixed; the page fills the viewport */
+  overflow: clip;
+  background-image: url("/hero/plate-hifi.jpg"); /* the hi-fi regrade */
+  background-size: cover;
+  background-position: 50%;
+  color: var(--ink-hero);
+}
+.hero-fg {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-image: url("/hero/plate-cutout.png");
+  background-size: cover;
+  background-position: 50%; /* must match .hero exactly — registration */
+  pointer-events: none;
+}
+.hero::after {
+  /* the dim rides above both layers so plate and cutout darken as one */
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: rgb(0 0 0 / var(--hero-dim));
+  pointer-events: none;
+}
+.hero > .hero-body {
+  position: relative;
+  z-index: 3;
+}
+
+/* ── SEARCH RESULTS (6R-0, artboard 57-0) ──
+   Floating items, no card. Click the stack to replay the entrance. */
+.hero-vignette {
+  position: absolute;
+  z-index: 0; /* under .hero-fg (z1): items rise from behind the house */
+  /* zoom scales offsets too — divide them out so the visual position holds:
+     top edge aligns with the headline's top at any scale */
+  right: calc(165px / var(--vignette-scale));
+  /* a touch above the headline's top on desktop and tablet */
+  top: calc((var(--nav-h) + var(--gap-hero) - 24px) / var(--vignette-scale));
+  width: 347px;
+  zoom: var(--vignette-scale); /* re-lays out at scale — text stays crisp */
+}
+.sr-stack {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px; /* layout is always tight — loose spacing exists only in flight */
+  font-family: var(--font-sans);
+  font-weight: 400;
+  cursor: pointer;
+}
+.sr-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: stretch;
+  gap: 6px;
+  margin-top: 3px; /* a touch more air under the results line than between rows */
+}
+/* optical: the dark card's crisp edge reads airier than the faint rows —
+   pull the first row 1px closer so the stack looks even */
+.sr-hit { margin-bottom: -1px; }
+
+/* the search field — absolute in the top slot; dissolves on send while the
+   results line arrives with the cascade in its place */
+.sr-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 300px;
+  height: 34px; /* fixed — the box never breathes between states */
+  padding: 8px 12px;
+  border-radius: 999px;
+  /* hairline as an inset shadow — a real border eats into the fixed box
+     and clips the 18px text line */
+  box-shadow: inset 0 0 0 var(--rule-w) var(--hairline-hero);
+  backdrop-filter: blur(32px);
+  /* the dark glass of the vignette's own cards — enough fill that the
+     white query reads over the bright sky band */
+  background: color(display-p3 0.095 0.095 0.095 / 0.45);
+  overflow: clip;
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--ink-hero);
+}
+/* results line — item zero of the cascade (frame 3's w-75 py-1 blur-32) */
+.sr-for {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 300px;
+  padding: 4px 0;
+  border-radius: 999px;
+  font-size: 13.5px; /* was 12 — read too tiny, especially on mobile */
+  line-height: 18px;
+  color: var(--ink-hero);
+}
+.sr-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.sr-bar-row.is-between { justify-content: space-between; }
+.sr-bar-fill {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  height: 18px; /* one text line — inline-block fade segments can't stretch it */
+  overflow: clip;
+  color: color(display-p3 1 1 1); /* the typed query reads full-strength */
+}
+.sr-send { display: inline-flex; }
+/* fade mode wraps segments in a block div — keep it inline so the caret stays on the line */
+.sr-stream, .sr-stream > div { display: inline; }
+.sr-dim64 { color: color(display-p3 1 1 1 / 64%); }
+/* "Searching" — a white flash sweeping through the dim text */
+.sr-searching {
+  background: linear-gradient(
+    90deg,
+    rgb(255 255 255 / 0.64) 42%,
+    rgb(255 255 255 / 1) 50%,
+    rgb(255 255 255 / 0.64) 58%
+  );
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: sr-searching-sweep 1.1s ease-in-out infinite;
+}
+@keyframes sr-searching-sweep {
+  from { background-position: 130% 0; }
+  to { background-position: -90% 0; }
+}
+/* provider conveyor under the line — faded at both edges */
+.sr-providers {
+  position: absolute;
+  /* window centered on the line's 300px width; only the center seat is
+     fully opaque — neighbors half-fade, and beyond them nothing */
+  left: 40px;
+  top: 36px;
+  width: 220px;
+  overflow: hidden;
+  pointer-events: none;
+  mask-image: linear-gradient(90deg, transparent, rgb(0 0 0 / 0.22) 16%, black 44%, black 56%, rgb(0 0 0 / 0.22) 84%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, rgb(0 0 0 / 0.22) 16%, black 44%, black 56%, rgb(0 0 0 / 0.22) 84%, transparent);
+}
+.sr-providers-strip {
+  display: flex;
+  align-items: center;
+  gap: 52px;
+  padding: 6px 0;
+}
+.sr-providers-strip svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  fill: color(display-p3 1 1 1 / 88%);
+}
+.sr-dim48 { color: var(--ink-hero-dim); }
+.sr-hit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  align-self: stretch;
+  padding: 8px 12px 8px 8px;
+  border-radius: 12px;
+  backdrop-filter: blur(24px);
+  /* always the dark treatment — no mid-animation surface swap */
+  background: color(display-p3 0.095 0.095 0.095 / 80%);
+  border: var(--rule-w) solid var(--hairline-hero);
+  overflow: clip;
+}
+.sr-hit-left { display: flex; align-items: center; gap: 10px; }
+.sr-thumb {
+  flex-shrink: 0;
+  border-radius: 6px;
+  background-size: cover;
+  background-position: 50%;
+  overflow: clip;
+}
+.sr-thumb-lg { width: 40px; height: 40px; }
+.sr-thumb-sm { width: 20px; height: 20px; }
+.sr-hit-col { display: flex; flex-direction: column; align-items: flex-start; }
+.sr-hit-name {
+  margin: 0;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--ink-hero);
+}
+.sr-hit-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 16px;
+  color: color(display-p3 1 1 1 / 48%);
+}
+.sr-rating { display: inline-flex; align-items: center; gap: 4px; }
+.sr-rating svg { transform: translateY(-1px); } /* optical center — the star rode low */
+.sr-count { color: color(display-p3 1 1 1 / 32%); }
+.sr-book {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: transparent; /* quiet until booked — one treatment throughout */
+  border: var(--rule-w) solid var(--hairline-hero);
+  font-size: 11px;
+  line-height: 14px; /* tight box — the pill was reading tall */
+  color: var(--ink-hero);
+  white-space: nowrap;
+  overflow: clip;
+  transition: background-color 450ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.sr-book.is-booked { background: color(display-p3 0.315 0.545 0.92 / 80%); } /* final */
+.sr-book-row { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.sr-book-sizer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  visibility: hidden;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.sr-row-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+}
+.sr-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  /* the ruled register: secondary results sit on the field under a
+     hairline, quieter than the hit's filled card */
+  padding: 8px 0;
+  border-bottom: var(--rule-w) solid var(--hairline-hero);
+  overflow: clip;
+  font-size: 13px;
+  line-height: 16px;
+  color: var(--ink-hero);
+  white-space: nowrap;
+}
+.sr-emerge { display: flex; align-items: center; }
+/* the line's two texts share one slot — a crossfade reads as one object rewriting */
+.sr-line-morph { display: grid; align-items: center; }
+.sr-line-layer {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.sr-line-inner { gap: 8px; width: 100%; }
+.sr-hit-inner { justify-content: space-between; gap: 24px; width: 100%; }
+.sr-row-inner { gap: 10px; flex: 1; min-width: 0; }
+.sr-row-inner > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── mobile nav: borderless glass icon button + the sheet ── */
+.nav-burger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-hero);
+  cursor: pointer;
+  transition: background-color 250ms ease;
+}
+.nav-burger.is-open { background: rgb(255 255 255 / 0.08); } /* fill only while open */
+.nav-menu {
+  position: fixed;
+  inset: 0; /* the whole screen */
+  z-index: 40; /* under the pill so the brand and burger stay up */
+  padding: calc(var(--nav-h) + 16px) var(--margin) 24px;
+  background: color(display-p3 0.075 0.063 0.063 / 90%);
+  backdrop-filter: blur(32px);
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+}
+.nav-menu-link {
+  padding: 18px 0;
+  border-bottom: var(--rule-w) solid var(--hairline-hero);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: var(--weight-light);
+  letter-spacing: -0.01em;
+  color: var(--ink-hero);
+  text-decoration: none;
+}
+.nav-menu-cta {
+  margin-top: auto; /* pinned to the sheet's bottom, Ramp-style */
+  justify-content: center;
+}
+
+/* ── nav (base 5-0; scrolled island 44-0) ── */
+.nav {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 50; /* above section-local stacking (carousel slides reach ~9) */
+  pointer-events: none; /* the full-width bar must not eat clicks beside the pill */
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--margin);
+  color: var(--ink-hero);
+  border-bottom: var(--rule-w) solid var(--hairline-hero);
+  transition:
+    border-color 300ms ease,
+    padding-top 400ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.nav.is-scrolled {
+  border-color: transparent;
+  padding-top: 8px; /* the top margin appearing */
+}
+.nav-pill {
+  position: relative;
+  z-index: 41; /* stays above the mobile sheet (z 40) in the header's context */
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  padding: 12px 0;
+  transition:
+    max-width 400ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    padding 400ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    background-color 400ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    backdrop-filter 400ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.nav.is-scrolled .nav-pill {
+  padding: 8px 10px 8px 24px; /* py-2 pr-2.5 pl-6 */
+  background-color: color(display-p3 0 0 0 / 16%);
+  backdrop-filter: blur(16px);
+}
+/* the island border draws itself: left → top → right → bottom, one stroke */
+.nav-border {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+.nav.is-scrolled .nav-border { opacity: 1; }
+.nav-border path {
+  fill: none;
+  stroke: var(--hairline-hero);
+  stroke-width: var(--rule-w);
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  transition: stroke-dashoffset 0s 160ms; /* reset invisibly on exit */
+}
+.nav.is-scrolled .nav-border path {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 750ms cubic-bezier(0.22, 0.61, 0.36, 1) 120ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav, .nav-pill, .nav-border, .nav-border path { transition: none; }
+}
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-brand);
+  color: var(--ink-hero);
+  text-decoration: none;
+}
+.brand svg { flex-shrink: 0; }
+.brand-name {
+  /* fixed 27px box (Paper h-6.75) so the leaf centers against it properly */
+  height: 27px;
+  flex-shrink: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-light);
+  font-size: var(--text-wordmark);
+  line-height: var(--leading-wordmark);
+  letter-spacing: var(--tracking-display);
+}
+.nav-right { display: flex; align-items: center; gap: var(--gap-nav-groups); }
+.nav-links { display: flex; align-items: flex-start; gap: var(--gap-links); }
+.nav-link {
+  position: relative;
+  font-size: var(--text-nav);
+  line-height: var(--leading-nav);
+  font-weight: 400; /* links opt out of the body's 300 Light, like all UI sans */
+  color: var(--ink-hero);
+  text-decoration: none;
+}
+/* underline wipes in from the left on hover, retreats to the right on exit */
+.nav-link::before {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  left: 0;
+  bottom: 0; /* sits on the line box; was 1.5em from top — too much air */
+  width: 100%;
+  height: 1px; /* component spec is 0.05em, sub-pixel at 13px — 1px holds the weight */
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.nav-link:focus-visible::before {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+@media (hover: hover) {
+  .nav-link:hover::before {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-link::before { transition: none; }
+}
+.lang {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-brand);
+  padding: 5px 12px;
+  font-size: var(--text-lang);
+  line-height: var(--leading-lang);
+}
+.lang .dim { color: var(--ink-hero-dim); }
+.lang .sep { font-weight: 400; color: var(--ink-hero-dim); }
+.lang-opt {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--ink-hero);
+  cursor: pointer;
+  transition: color 160ms ease;
+}
+.lang-opt.dim { color: var(--ink-hero-dim); }
+
+/* ── glass button (nav CTA + hero CTA share the recipe) ── */
+.btn-glass {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: var(--btn-pad);
+  border: var(--rule-w) solid var(--hairline-hero);
+  background-image: var(--glass);
+  background-origin: border-box;
+  font-size: var(--text-btn);
+  line-height: var(--leading-btn);
+  color: var(--ink-hero);
+  text-decoration: none;
+  position: relative;
+  isolation: isolate;
+}
+/* hover: 4% fill wipes in left → right, then holds as the regular fill;
+   on exit it fades out and snaps back invisibly (no reverse wipe) */
+.btn-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: color(display-p3 1 1 1 / 6%);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  opacity: 0;
+  transition: opacity 160ms ease, transform 0s 160ms;
+}
+.btn-glass:focus-visible::before {
+  opacity: 1;
+  transform: scaleX(1);
+  transition: transform 300ms cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0s;
+}
+@media (hover: hover) {
+  .btn-glass:hover::before {
+    opacity: 1;
+    transform: scaleX(1);
+    transition: transform 300ms cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0s;
+  }
+}
+@media (hover: none) {
+  .btn-glass:active::before {
+    opacity: 1;
+    transform: scaleX(1);
+    transition: none;
+  }
+}
+.btn-glass svg { flex-shrink: 0; }
+/* hover: arrow slides out right and returns from the left, faded through
+   both exits so nothing hard-clips */
+@keyframes arrow-through {
+  0%   { transform: translateX(0);      opacity: 1; }
+  45%  { transform: translateX(12px);   opacity: 0; }
+  50%  { transform: translateX(-12px);  opacity: 0; }
+  100% { transform: translateX(0);      opacity: 1; }
+}
+.btn-glass:focus-visible svg { animation: arrow-through 450ms cubic-bezier(0.22, 0.61, 0.36, 1); }
+@media (hover: hover) {
+  .btn-glass:hover svg { animation: arrow-through 450ms cubic-bezier(0.22, 0.61, 0.36, 1); }
+}
+
+/* ── hero body (10-0) ── */
+.hero-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: stretch;
+  flex: 1;
+  padding: 0 var(--margin);
+}
+.hero-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--gap-copy);
+  width: var(--copy-w);
+}
+.hero-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: stretch;
+  gap: var(--gap-copy-text);
+}
+.hero-h1 {
+  margin: 0;
+  align-self: stretch;
+  font-family: var(--font-display);
+  font-weight: var(--weight-light);
+  font-size: var(--text-h1);
+  line-height: var(--leading-h1);
+  letter-spacing: var(--tracking-display);
+}
+.hero-sub {
+  margin: 0;
+  align-self: stretch;
+  font-size: 15px; /* decoupled from the nav token — it read too small everywhere */
+  line-height: 21px;
+  text-wrap: balance;
+}
+
+/* ── PROTOTYPE: services section (vignette UI system) ── */
+.svc {
+  background: #131010;
+  color: var(--ink-hero);
+  padding: 88px var(--margin) 96px; /* tighter seams between sections */
+  font-family: var(--font-sans);
+}
+.svc-h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-light);
+  font-size: var(--text-h1); /* same size + leading as the hero header */
+  line-height: var(--leading-h1);
+  letter-spacing: var(--tracking-display);
+  max-width: 18ch;
+}
+.svc-cards {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--grid-gap); /* rows and columns share the gutter */
+  margin-top: 36px; /* one header-to-content gap across the sections */
+}
+.svc-card { grid-column: span 4; }
+.svc-card.is-wide { grid-column: span 6; }
+.svc-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.svc-card-img {
+  position: relative;
+  height: 460px; /* one tall height for every card, wide or narrow */
+  background: var(--field); /* the artifacts carry it */
+  border: var(--rule-w) solid var(--frame-line); /* frame-dim, not UI-hairline */
+  overflow: clip; /* the blurred ground stays inside */
+}
+/* the how-it-works field grounds on the plate itself, hero-dimmed and
+   layer-blurred; the other cards stay on the plain field */
+.hiw-visual::before {
+  content: "";
+  position: absolute;
+  inset: -28px; /* the blur's soft edge stays outside the clip */
+  z-index: 0;
+  background-image: linear-gradient(rgb(0 0 0 / var(--hero-dim)), rgb(0 0 0 / var(--hero-dim))),
+    url('/hero/plate-city.jpg'); /* the sky-and-city crop only */
+  background-size: cover;
+  background-position: 50%;
+  filter: blur(16px);
+  pointer-events: none;
+}
+
+/* ── PROTOTYPE: demonstrative artifacts — the vignette's glass objects
+      reused as proof-of-service, composited over the photography ── */
+.art-stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.art-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: min(310px, 100%);
+  font-family: var(--font-sans);
+  font-weight: 400;
+}
+.art-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  backdrop-filter: blur(32px);
+  background: rgb(255 255 255 / 0.08);
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--ink-hero);
+  white-space: nowrap;
+  overflow: clip;
+}
+.art-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  backdrop-filter: blur(16px);
+  background: color(display-p3 0.095 0.095 0.095 / 64%);
+  border: var(--rule-w) solid var(--hairline-hero);
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 400;
+  color: var(--ink-hero);
+  overflow: clip;
+}
+.art-panel p { margin: 0; }
+.art-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.art-rule { border-top: var(--rule-w) solid var(--hairline-hero); }
+/* consistency: every final summary line sits 16px off its rule, the
+   spacing the rates card's price gets */
+.art-rule + .art-line.art-strong { margin-top: 8px; } /* panel gap 8 + 8 */
+.receipt-rule + .receipt-total { margin-top: 4px; } /* receipt gap 12 + 4 */
+.art-amber { color: color(display-p3 1 0.788 0.497); }
+.art-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: color(display-p3 1 0.9 0.58); /* lighter than the amber — legible on the dark field */
+}
+.art-delta svg { transform: translateY(1px); } /* optical center against the digits */
+.art-strong { font-weight: 500; }
+.art-note { font-size: 12px; line-height: 16px; color: var(--ink-hero-dim); }
+.art-fill { flex: 1; }
+.art-truncate {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* ── PROTOTYPE: the statement — what Autumn does, in plain english ── */
+.stmt {
+  display: flex;
+  align-items: center;
+  min-height: 100svh;
+}
+.stmt-text {
+  margin: 0;
+  max-width: 46ch;
+  font-family: var(--font-display);
+  font-weight: var(--weight-light);
+  font-size: clamp(30px, 3.5vw, 48px);
+  line-height: 1.18;
+  letter-spacing: var(--tracking-display);
+  color: var(--ink-hero);
+}
+
+/* ── PROTOTYPE: the orbit — services as a constellation around the listing ── */
+.svc-orbit {
+  position: relative;
+  height: 620px;
+  /* no perspective: any 3D rendering context above the cards stops
+     Chromium sampling their backdrop-filter — the lean is 2D drift now */
+  background: var(--field);
+  border: var(--rule-w) solid var(--frame-line); /* frame-dim, not UI-hairline */
+  overflow: clip;
+}
+/* the composition box — Paper's world offsets, photo as origin anchor */
+/* a normal section; the stage itself is always viewport-height minus the
+   nav and breathing gaps — at every scroll position, that is its size */
+.svc.orb-sec { padding-bottom: 0; } /* the divider hugs the docked marquee — double class so the responsive .svc padding overrides can't reopen the gap */
+.orb-latch {
+  display: flex;
+  flex-direction: column;
+  margin-top: 36px; /* identical heading rhythm to how-it-works */
+}
+.orb-sec .svc-orbit {
+  height: calc(100svh - var(--nav-h) - 48px);
+  min-height: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* the activity feed bar — sticky latch, then it docks at the seam */
+.orb-feed {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin: 64px calc(-1 * var(--margin)) 0; /* full bleed; roomier resting gap from the stage */
+  padding: 13px var(--margin);
+  background: #131010;
+  border-top: var(--rule-w) solid var(--frame-line);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.orb-feed-window {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, black 24px, black calc(100% - 24px), transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 24px, black calc(100% - 24px), transparent);
+}
+.orb-feed-strip {
+  display: flex;
+  width: max-content;
+  animation: orb-feed-scroll 48s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .orb-feed-strip { animation: none; }
+}
+@keyframes orb-feed-scroll {
+  to { transform: translateX(-50%); }
+}
+.orb-feed-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 20px;
+  padding-right: 20px;
+  border-right: var(--rule-w) solid var(--hairline-hero);
+}
+.orb-feed-label { color: var(--ink-hero-dim); }
+.orb-feed-num {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px; /* icon sits right-padding − 2 off the text */
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgb(255 255 255 / 0.08);
+  color: color(display-p3 1 1 1 / 90%);
+  font-variant-numeric: tabular-nums;
+}
+
+.orb-h2 {
+  margin-inline: auto;
+  max-width: none;
+  text-align: center;
+}
+.orb-comp {
+  position: relative; /* flex centers the zoomed box; motion owns the tilt */
+  width: 532px;
+  height: 530px;
+  /* flat on purpose: preserve-3d seats every card in its own 3D plane,
+     where Chromium won't sample backdrop-filter — the lean's parallax is
+     computed per layer in Orbit.tsx instead */
+}
+.orb-comp > * { position: absolute; }
+.orb-photo {
+  left: 134px;
+  top: 105px;
+  z-index: 1;
+  width: 266px;
+  height: 374px;
+  background-size: cover;
+  background-position: 50%;
+}
+/* the mosaic lattice — dark 1px grout, every tile a different property */
+.orb-mosaic {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 1px; /* seams show the stage's own field — no dark ring around the collage */
+  padding: 0;
+  background: none;
+}
+.orb-tile {
+  background-size: cover;
+  background-position: 50%;
+  filter: saturate(0.85) brightness(0.92); /* one family of tones */
+}
+
+.orb-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  /* no element opacity (it dimmed the ink) and no element filter — both
+     are more ways to stop Chromium rendering the backdrop blur */
+  overflow: clip;
+  background: rgb(255 255 255 / 0.8); /* Paper's white glass: #FFFFFFCC */
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  color: #000000;
+}
+.orb-emails { left: 0; top: 0; width: 175px; z-index: 2; }
+.orb-rates { left: 357px; top: 170px; width: 175px; z-index: 2; }
+.orb-posts { left: -15px; top: 387px; width: 165px; z-index: 0; } /* behind the photo, shallowest */
+.orb-head {
+  font-size: 11px;
+  line-height: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em; /* one head treatment — matches the marquee */
+}
+.orb-rows-ruled {
+  align-self: stretch;
+  padding-bottom: 16px;
+  border-bottom: 0.5px solid rgb(0 0 0 / 0.32);
+}
+/* the vertical conveyor window — one full list visible, fades at the rims */
+.orb-ticker {
+  align-self: stretch;
+  height: 72px; /* 3 rows on the 28px grid — the seat is dead center */
+  overflow: hidden; /* crisp clip — the dimmed rows carry the hierarchy */
+}
+.orb-ticker-strip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+.orb-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 16px;
+  color: rgb(0 0 0 / 0.64);
+  white-space: nowrap;
+}
+.orb-sq { width: 6px; height: 6px; flex-shrink: 0; }
+.orb-price {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-end; /* Paper's align-end column */
+  font-size: 13px;
+  line-height: 16px;
+  color: rgb(0 0 0 / 0.64);
+}
+.orb-post-window {
+  /* the conveyor runs edge to edge of the card, cut clean at the sides */
+  margin: 0 -16px;
+  overflow: hidden;
+}
+.orb-post-strip { display: flex; gap: 8px; }
+.orb-post {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 8px;
+  width: 60px;
+  padding-bottom: 8px;
+  border: 0.5px solid rgb(0 0 0 / 0.16);
+}
+.orb-post-img { height: 53px; background: rgb(0 0 0 / 0.16); }
+.orb-post-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-inline: 4px;
+}
+.orb-bar { height: 4px; border-radius: 1px; background: rgb(0 0 0 / 0.16); }
+/* floated mid-visual, like the reference's feature cards */
+.art-float {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.art-float > * { width: min(280px, 100%); min-width: 0; }
+.art-card { gap: 10px; font-size: 12px; line-height: 17px; letter-spacing: -0.01em; }
+.art-card .art-strong { font-size: 13px; line-height: 16px; margin-bottom: 2px; }
+.art-card .art-note { line-height: 17px; } /* one leading inside the card */
+.art-iconline { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+/* a stack of posts: rotated sheets peek out from behind the top one */
+.art-panel.is-stacked::before,
+.art-panel.is-stacked::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: color(display-p3 0.966 0.951 0.929 / 0.92);
+}
+.art-panel.is-stacked::before { transform: rotate(-2.4deg) translateY(2px); }
+.art-panel.is-stacked::after { transform: rotate(1.8deg) translateY(1px); }
+.art-panel.is-stacked { position: relative; overflow: visible; }
+/* the ad scatter — headed tiles at depths, the reference's collage energy */
+.art-ads {
+  position: absolute;
+  inset: 7%; /* the scatter keeps clear air from the container's edges */
+  z-index: 0;
+  pointer-events: none;
+}
+.art-stack { position: relative; z-index: 1; }
+.art-ad {
+  position: absolute;
+  border-radius: 0; /* hard corners — print objects, not app chips */
+  background: color(display-p3 0.966 0.951 0.929 / 0.92); /* warm off-white */
+  overflow: clip;
+}
+.art-ad-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  /* size, leading and padding ride the tile's proportional inline style */
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: color(display-p3 0.145 0.112 0.078 / 64%);
+  white-space: nowrap;
+}
+.art-ad-img {
+  aspect-ratio: 3 / 4; /* portrait — taller objects */
+  background-size: cover;
+  background-position: 50%;
+}
+
+/* the map: a ghost of the line plate — the container keeps no fill of
+   its own, the dusk field stays the ground */
+.art-map {
+  position: relative;
+  height: 132px;
+  border-radius: 0;
+  border: var(--rule-w) solid var(--hairline-cream);
+  overflow: clip;
+}
+.art-map::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url('/hero/map-plate.png') 50% 40% / cover no-repeat;
+  opacity: 0.15;
+}
+.art-map { border: 0; } /* the ghost plate meets the card bare */
+/* pin and label travel as one — label centered under the point */
+.art-pin-spot {
+  position: absolute;
+  left: 54%;
+  top: 22%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px; /* the bubble's tail lives in this gap */
+}
+/* the price bubble: white pill, lamp badge, pointer tail */
+.map-price-pin {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 3px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #131010;
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.map-price-pin::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -5px;
+  transform: translateX(-50%);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid #ffffff;
+}
+.map-pin-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: color(display-p3 0.96 0.58 0.52); /* the map's red, filled */
+  color: #ffffff;
+  flex-shrink: 0;
+}
+/* one notification, expanded: the source bookings live inside the card
+   under a rule */
+.sr-hit.is-expanded {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding-top: 10px; /* matches the main row's seat above the rule */
+  padding-bottom: 14px;
+}
+.sr-hit.is-expanded .sr-hit-meta { font-size: 12px; } /* a kicker, not a second headline */
+.sr-hit-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.sr-hit-expand {
+  border-top: var(--rule-w) solid var(--hairline-cream);
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.sr-hit-subrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+/* the booked card reads as a notification: time above the pill */
+.sr-hit-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.sr-hit-time {
+  font-size: 11px;
+  line-height: 14px;
+  color: color(display-p3 0.145 0.112 0.078 / 48%);
+}
+.art-map-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border-radius: 8px;
+  background: color(display-p3 0.095 0.095 0.095 / 0.6); /* dark glass over the plate */
+  border: var(--rule-w) solid var(--hairline-hero);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 400;
+  white-space: nowrap;
+  color: var(--ink-hero);
+}
+.art-cream .art-map-chip .sr-dim48 { color: var(--ink-hero-dim); } /* the rating stays white on the dark glass */
+.art-map-chip .sr-rating svg { width: 11px; height: 11px; transform: none; } /* star sized to the chip's 11px type, dead center */
+
+/* the rate week: four nights, four prices — the movement is the message */
+/* the pricing artifact breathes wider than the chat-sized chips */
+.art-panel.art-roomy { padding: 18px; gap: 12px; }
+.art-nights { display: flex; gap: 6px; }
+.art-night {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 9px;
+  border-radius: 8px;
+  border: var(--rule-w) solid var(--hairline-cream);
+}
+.art-night-day {
+  font-size: 10px;
+  line-height: 14px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: color(display-p3 0.145 0.112 0.078 / 48%);
+}
+.art-night-price {
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 500;
+}
+.art-mail-from {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.art-post-img {
+  height: 120px;
+  border-radius: 6px; /* the thumbs' radius */
+  background-size: cover;
+  background-position: 50%;
+  margin-bottom: 4px;
+}
+.art-clamp2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-width: 0;
+}
+/* cream treatment — the artifacts in daylight on the warm field */
+.art-cream { color: var(--ink-cream); }
+.art-cream .art-panel,
+.art-cream .art-bar,
+.art-cream .sr-hit,
+.art-cream .sr-row {
+  background: var(--cream);
+  border: var(--rule-w) solid var(--hairline-cream);
+  color: var(--ink-cream);
+  backdrop-filter: none;
+}
+.art-cream .sr-hit-name { color: var(--ink-cream); }
+.art-cream .sr-dim64 { color: color(display-p3 0.145 0.112 0.078 / 64%); }
+/* replies sit on the field, spoken not printed: no fill, ruled under */
+.art-cream .sr-row {
+  background: none;
+  border: 0;
+  border-bottom: var(--rule-w) solid var(--hairline-hero);
+  border-radius: 0;
+  backdrop-filter: none;
+  padding: 8px 0 14px; /* the rule keeps its distance below the words */
+  white-space: normal;
+  color: var(--ink-hero);
+}
+/* the AI reply: sparked header, the written response quoted below it */
+.art-cream .sr-row.is-replied {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+.sr-row-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+.sr-row-head svg { transform: translateY(0.5px); } /* optical center against the header line */
+.sr-row-quote {
+  margin: 0;
+  line-height: 18px; /* the multi-line responses need more air than the row's 16 */
+  color: color(display-p3 1 1 1 / 72%);
+}
+/* a quote carrying an inline citation pill leads looser so the pill
+   doesn't crowd its neighbors */
+.sr-row-quote:has(.art-cite) { line-height: 22px; }
+/* the traveler's chat bubble: asked from the right, tail corner tucked */
+.art-cream .art-panel.art-chat-q {
+  align-self: flex-end;
+  max-width: 82%;
+  border-radius: 14px 14px 4px 14px;
+  margin-bottom: 10px; /* the answer takes a beat before it speaks */
+}
+
+/* pressed ascii leaves in the card field's air */
+.art-leaves {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.art-leaves pre {
+  position: absolute;
+  margin: 0;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-weight: 700; /* dense glyphs keep the ascii step legible this small */
+  line-height: 1.05;
+  white-space: pre;
+  color: var(--ink-hero);
+}
+
+/* film grain in the card fields — print texture, not particles */
+.svc-card-img::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.05;
+  pointer-events: none;
+}
+
+/* the outlink tag riding the post photo's corner */
+.art-post-img { position: relative; }
+.art-outlink {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: color(display-p3 0.095 0.095 0.095 / 0.64);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: 10px;
+  line-height: 14px;
+  color: color(display-p3 1 1 1 / 0.9);
+  white-space: nowrap;
+}
+
+/* the citation pill: source favicon + domain, the reference's chip */
+.art-cite {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px 2px 3px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.1);
+  font-size: 10px;
+  line-height: 14px;
+  color: color(display-p3 1 1 1 / 0.72);
+  white-space: nowrap;
+  /* pill height (14 + 2·2) fills the quote's 18px line box exactly, so
+     bottom-alignment centers it on the text line */
+  vertical-align: bottom;
+}
+.art-cite-fav {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background-size: cover;
+  background-position: 50%;
+  flex-shrink: 0;
+}
+
+/* the picked row's label stacks its kicker under the name */
+.sr-row-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.sr-row-sub {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--ink-hero-dim);
+}
+
+/* the picked row: full-strength ink, the rule turns the booked blue, and
+   a wash rises off the rule and dies out by the row's top */
+.art-cream .sr-row.is-picked,
+.sr-row.is-picked {
+  border-bottom-color: color(display-p3 0.315 0.545 0.92 / 80%);
+  background: linear-gradient(
+    to top,
+    color(display-p3 0.315 0.545 0.92 / 0.22),
+    color(display-p3 0.315 0.545 0.92 / 0)
+  );
+}
+.art-confirm { display: flex; justify-content: flex-end; padding-top: 4px; }
+.art-cream .sr-dim48,
+.art-cream .art-note,
+.art-cream .sr-hit-meta { color: color(display-p3 0.145 0.112 0.078 / 48%); }
+.art-cream .sr-count { color: color(display-p3 0.145 0.112 0.078 / 32%); }
+.art-cream .art-rule { border-top-color: var(--hairline-cream); }
+.art-cream .art-amber { color: var(--amber-cream); }
+/* deltas ride the dark field even inside the cream dialect — stay light */
+.art-cream .art-delta { color: color(display-p3 1 0.9 0.58); }
+.art-cream .sr-book {
+  border-color: var(--hairline-cream);
+  color: var(--ink-cream);
+}
+.art-cream .sr-book.is-booked { color: var(--ink-hero); } /* white on the blue pill */
+/* status, not button: on the notification the booked state is a tinted
+   badge — blue ink on a blue wash, nothing to press */
+.art-cream .sr-book.is-booked.sr-status,
+.sr-book.is-booked.sr-status {
+  background: color(display-p3 0.315 0.545 0.92 / 0.16);
+  border-color: transparent;
+  color: color(display-p3 0.25 0.45 0.82);
+}
+
+/* white ui — every artifact converges on the orbit cards' treatment:
+   90% white, soft backdrop blur, borderless, hard corners */
+.art-cream .art-panel,
+.art-cream .art-bar,
+.art-cream .sr-hit {
+  background: color(display-p3 0.966 0.951 0.929 / 0.92); /* warm off-white, dusk-complementary */
+  border: 0;
+  border-radius: 0;
+  backdrop-filter: blur(4px);
+}
+.art-cream .sr-thumb,
+.art-cream .art-night,
+.art-cream .art-post-img,
+.art-cream .sr-book {
+  border-radius: 0;
+}
+
+.svc-card-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.svc-card-title {
+  margin: 0;
+  font-size: 16px; /* matches the accordion titles */
+  line-height: 22px;
+  font-weight: 400; /* headers set in Helvetica run Regular */
+  letter-spacing: -0.01em;
+}
+.svc-card-title .svc-dim { font-weight: 400; } /* color carries the two-tone */
+.svc-card-inhead {
+  position: relative;
+  z-index: 1; /* above the floating artifact stage */
+  padding: 20px 20px 0;
+}
+.svc-card-img.is-headed .art-float { top: 84px; } /* artifact centers below the header */
+.svc-card.is-wide .art-float { top: 84px; }
+.svc-card-desc {
+  margin: 0;
+  font-size: 14px;
+  line-height: 21px;
+  font-weight: 400;
+  color: color(display-p3 1 1 1 / 64%);
+  max-width: 32ch;
+  text-wrap: balance;
+}
+.svc-dim { color: color(display-p3 1 1 1 / 64%); font-weight: 400; }
+/* ── PROTOTYPE: services carousel ── */
+.svc-head-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+.svc-nav-arrows { display: flex; gap: 8px; }
+.svc-arrow-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 0;
+  border: var(--rule-w) solid var(--hairline-hero);
+  background: transparent;
+  color: var(--ink-hero);
+  cursor: pointer;
+  transition: background-color 160ms ease;
+}
+.svc-arrow-btn:hover { background: rgb(255 255 255 / 0.06); }
+.svc-arrow-btn.is-prev svg { rotate: 180deg; }
+.svc-carousel {
+  position: relative; /* slides are absolutely placed and animated */
+  height: 360px;
+  margin-top: 36px; /* one header-to-content gap across the sections */
+  overflow: clip; /* wrapping slides exit one side, re-enter the other */
+}
+.svc-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 0;
+  border: var(--rule-w) solid var(--hairline-hero);
+  background-size: cover;
+  background-position: 50%;
+  background-repeat: no-repeat;
+  overflow: clip;
+  cursor: pointer;
+  filter: saturate(0.85) brightness(0.8);
+  transition: filter 650ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.svc-slide.is-active {
+  cursor: pointer;
+  filter: none;
+}
+/* the image layer holds still — no scaling after arrival; the only
+   motion an image gets is the layout reveal itself */
+.svc-slide-img {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: 50%;
+}
+.svc-slide-label {
+  position: absolute;
+  left: 14px;
+  bottom: 12px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: color(display-p3 0.095 0.095 0.095 / 64%);
+  backdrop-filter: blur(16px);
+  border: var(--rule-w) solid var(--hairline-hero);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+.svc-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  margin-top: 24px;
+}
+.svc-caption-text {
+  margin: 0;
+  max-width: 52ch;
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 400;
+  min-height: 44px; /* always two lines — the carousel height never shifts */
+}
+.svc-caption-lead { font-weight: 400; } /* Regular — the dim tail carries the two-tone */
+
+/* results flows like every other section — the 100svh centered experiment
+   read as inconsistent rhythm against the top-anchored page */
+
+/* ── PROTOTYPE: how-it-works (accordion drives the visual) ── */
+.hiw {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--grid-gap);
+  row-gap: 36px;
+  align-items: start;
+}
+.hiw-h2 { grid-column: 1 / 7; grid-row: 1; }
+.hiw-visual {
+  grid-column: 1 / 7;
+  grid-row: 2;
+  position: relative; /* carries the constant ground */
+  align-self: stretch; /* the accordion's height leads; the image follows */
+  background: var(--field);
+  border: var(--rule-w) solid var(--frame-line); /* the margin lines' treatment */
+  overflow: clip;
+}
+.hiw-list {
+  /* next to the image with a clear spacing — not pushed to the frame edge */
+  grid-column: 7 / 13;
+  grid-row: 2;
+  align-self: start; /* natural height — the card grows to meet it */
+  margin-left: var(--grid-gap);
+  max-width: 360px; /* the reference caps the accordion short of the frame */
+}
+
+.hiw-img {
+  position: relative; /* the artifact stage anchors to the composite */
+  height: 100%;
+  min-height: 420px; /* the artifacts always get their room */
+  /* transparent — the wrapper's ground stays put while content swaps */
+}
+.hiw-list {
+  position: relative; /* carries the continuous rail */
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* bands carry their own padding — no extra splay */
+}
+/* one unbroken rail down the whole list; items light their own span */
+.hiw-list::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 1px;
+  background: var(--hairline-hero); /* visible enough to read as connected */
+}
+/* items hang off a left indicator line; the open one's line is lit and
+   the rest are pushed by its height change */
+.hiw-item {
+  position: relative;
+  padding: 20px 0 20px 20px; /* the item is a band — its line outruns the text */
+}
+.hiw-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 1px;
+  background: transparent; /* the list rail shows through until lit */
+  transition: background-color 350ms ease;
+}
+.hiw-item.is-open::before { background: var(--ink-hero); }
+.hiw-item-head {
+  appearance: none;
+  background: none;
+  border: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 2px 0;
+  font: inherit;
+  color: var(--ink-hero);
+  cursor: pointer;
+  text-align: left;
+}
+.hiw-item-title {
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 400; /* headers set in Helvetica run Regular */
+  letter-spacing: -0.01em;
+  transition: color 160ms ease;
+}
+@media (hover: hover) {
+  .hiw-item-head:hover .hiw-item-title { color: var(--ink-hero); }
+}
+.hiw-item-body {
+  overflow: clip;
+}
+.hiw-item-cta { display: inline-flex; width: fit-content; margin: var(--gap-copy) 0 2px; } /* the hero's text-to-button gap */
+.hiw-item-body p {
+  margin: 0;
+  padding: 10px 0 2px;
+  max-width: 58ch;
+  font-size: 14px;
+  line-height: 21px;
+  font-weight: 400;
+  color: color(display-p3 1 1 1 / 64%);
+}
+
+/* ── PROTOTYPE: flagship program — the conversion moment ── */
+.flag {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--grid-gap);
+  align-items: center;
+}
+.flag-copy {
+  grid-column: 1 / 6;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--gap-copy);
+}
+.flag-sub {
+  margin: 0;
+  max-width: 36ch;
+  text-wrap: balance;
+  font-size: 14px;
+  line-height: 21px;
+  font-weight: 400;
+  color: color(display-p3 1 1 1 / 64%);
+}
+.flag-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 400;
+  color: var(--ink-hero-dim);
+}
+.flag-visual {
+  grid-column: 7 / 13;
+  position: relative;
+  height: 420px;
+  background: var(--field);
+  border: var(--rule-w) solid var(--frame-line); /* the margin lines' treatment */
+  overflow: clip; /* the blurred ground stays inside */
+}
+
+/* ── the agreement, printed: a receipt over the city at dusk ── */
+.art-city::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: linear-gradient(rgb(0 0 0 / var(--hero-dim)), rgb(0 0 0 / var(--hero-dim))),
+    url('/hero/plate-city.jpg'); /* the sky-and-city crop only */
+  background-size: cover;
+  background-position: 50%;
+  pointer-events: none;
+}
+/* the receipt speaks the cream dialect — the panels' sans rows and
+   hairlines, the nav's serif wordmark; only the shape stays receipt */
+.receipt {
+  position: relative;
+  z-index: 1; /* above the stage's city ground */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(300px, 100%);
+  padding: 20px 20px 28px; /* the footer zone runs taller, like a real slip */
+  /* glassier than the chips: the city ground frosts through at 80% —
+     the hit-card blur family */
+  border-radius: 0;
+  background: color(display-p3 0.966 0.951 0.929 / 0.8);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  color: var(--ink-cream);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 400;
+}
+.receipt-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0 2px;
+  text-align: center;
+}
+.receipt-brand {
+  font-family: var(--font-display);
+  font-weight: var(--weight-light);
+  font-size: var(--text-wordmark);
+  line-height: var(--leading-wordmark);
+  letter-spacing: var(--tracking-display);
+}
+.receipt-sub {
+  font-size: 12px;
+  line-height: 16px;
+  color: color(display-p3 0.145 0.112 0.078 / 48%);
+}
+.receipt-rule { border-top: var(--rule-w) solid var(--hairline-cream); }
+.receipt-items { display: flex; flex-direction: column; gap: 8px; }
+.receipt-line { display: flex; justify-content: space-between; gap: 16px; }
+.receipt-line > span:first-child { color: color(display-p3 0.145 0.112 0.078 / 64%); }
+.receipt-total { font-weight: 500; }
+.receipt-total > span:first-child { color: var(--ink-cream); }
+.receipt-note {
+  margin: 0;
+  padding-top: 8px;
+  text-align: center;
+  font-size: 12px;
+  color: color(display-p3 0.145 0.112 0.078 / 48%);
+}
+
+/* ── PROTOTYPE: footer — brand + blurb left, link columns right, the
+      wordmark in ascii fading up across the bottom ── */
+.footer-reveal {
+  position: relative;
+  /* height mirrors the footer's natural height, synced in Footer.tsx —
+     the clip makes the page lift off the fixed footer: the curtain */
+  clip-path: inset(0);
+}
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--field); /* the lifted surface — the footer is a stage */
+  color: var(--ink-hero);
+  font-family: var(--font-sans);
+  padding: 72px var(--margin) 0;
+  display: flex;
+  flex-direction: column;
+  gap: 72px;
+}
+/* the leaf snowfall — behind everything, clipped to the footer */
+.footer { overflow: clip; } /* the leaves stay inside; position stays fixed */
+.footer > *:not(.leaf-fall) { position: relative; z-index: 1; }
+.leaf-fall {
+  position: absolute;
+  inset: 0 var(--margin); /* content area only — the side margins stay clear */
+  z-index: 0;
+  pointer-events: none;
+  container-type: size; /* cqh drives the fall distance */
+}
+.foot-leaf-p {
+  position: absolute;
+  top: -48px;
+  pointer-events: none;
+}
+.foot-leaf {
+  margin: 0;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  line-height: 1.05;
+  white-space: pre;
+  color: var(--ink-hero);
+  animation: leaf-fall var(--dur) linear var(--delay) infinite;
+}
+@keyframes leaf-fall {
+  /* enter above the frame and exit past it (with parallax headroom), so
+     the infinite wrap never happens on screen */
+  from { transform: translateY(-120px) rotate(-10deg); }
+  to { transform: translateY(calc(100cqh + 120px)) rotate(14deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .foot-leaf { display: none; }
+}
+
+.footer-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 48px;
+}
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+/* the brand runs bigger down here */
+.footer-brand .brand { gap: 9px; }
+.footer-brand .brand svg { width: 22px; height: 19.6px; }
+.footer-brand .brand-name {
+  height: auto;
+  font-size: 30px;
+  line-height: 36px;
+}
+.footer-brand p {
+  margin: 0;
+  max-width: 34ch;
+  font-size: 14px;
+  line-height: 21px; /* the paragraph family every section blurb runs */
+  font-weight: 400;
+  color: color(display-p3 1 1 1 / 64%);
+}
+/* the year and the mailto ride centered inside the ascii wordmark */
+.footer-ascii-wrap { position: relative; }
+.footer-ascii-over {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10%;
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 400;
+  color: var(--ink-hero-dim);
+}
+.footer-mail {
+  color: var(--ink-hero);
+  text-decoration: none;
+}
+.footer-mail:hover { text-decoration: underline; }
+.footer-copy {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+  color: var(--ink-hero-dim);
+}
+.footer-cols { display: flex; gap: 64px; }
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+.footer-ascii {
+  margin: 0;
+  align-self: center;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  /* the art spans the content width at any viewport: advance ≈ 0.6em */
+  font-size: calc((100vw - 2 * var(--margin)) / (var(--ascii-cols) * 0.62));
+  line-height: 1.1;
+  white-space: pre;
+  color: color(display-p3 1 1 1 / 22%);
+  overflow: hidden;
+  user-select: none;
+  /* rises out of the page, like the reference's mosaic */
+  mask-image: linear-gradient(to bottom, transparent, black 78%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 78%);
+}
+
+/* ── hatched section divider ── */
+.divider {
+  height: 0;
+  border-top: var(--rule-w) solid var(--frame-line);
+  /* rules span only between the vertical frame lines — margins stay clean */
+  margin-left: calc(var(--margin) - var(--grid-gap));
+  margin-right: calc(var(--margin) - var(--grid-gap));
+}
+.divider.is-full { margin-left: 0; margin-right: 0; } /* the hero's base line runs edge to edge */
+/* vertical hairlines running down the page margins, framing the sections */
+.frame-lines { position: relative; }
+.frame-lines::before,
+.frame-lines::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: var(--rule-w);
+  background: var(--frame-line);
+  pointer-events: none;
+  z-index: 10;
+}
+/* one gutter outside the content edge — air between line and content,
+   content stays on the grid */
+.frame-lines::before { left: calc(var(--margin) - var(--grid-gap)); }
+.frame-lines::after { right: calc(var(--margin) - var(--grid-gap)); }
+
+/* progress on the featured slide — fills over the autoplay interval,
+   pauses with hover or when the section is off-screen */
+.svc-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: rgb(255 255 255 / 0.2);
+}
+.svc-progress-fill {
+  height: 100%;
+  background: rgb(255 255 255 / 0.85);
+  transform-origin: left;
+  transform: scaleX(0);
+  animation: svc-progress 9s linear forwards;
+}
+.svc-progress-fill.is-paused { animation-play-state: paused; }
+@keyframes svc-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+
+
+/* ════ responsive pass — tokens scale, sections restack ════ */
+
+/* small desktop */
+@media (max-width: 1280px) {
+  :root { --margin: 64px; }
+}
+
+/* tablet */
+@media (max-width: 1024px) {
+  :root {
+    --margin: 40px;
+    --gap-hero: 96px;
+  }
+  .svc { padding: 64px var(--margin) 72px; }
+  /* internal rhythms scale with the section, not just its shell */
+  .hiw { row-gap: 28px; }
+  .svc-cards { margin-top: 36px; }
+  .orb-latch { margin-top: 28px; }
+
+  .hero-vignette {
+    --vignette-scale: 1;
+    /* margin-anchored — the 165px desktop offset would cross the headline */
+    right: calc(var(--margin) / var(--vignette-scale));
+  }
+}
+
+/* hero goes mobile at the standard 768: the animation drops below the
+   copy and left-aligns to the margin */
+@media (max-width: 768px) {
+  :root { --gap-hero: 48px; }
+  .hero-vignette {
+    --vignette-scale: 1;
+    right: auto;
+    left: var(--margin);
+    top: 366px; /* the tablet copy block runs taller than mobile's */
+    margin-left: 0;
+  }
+  /* the stage never exceeds the viewport; contents truncate, never wrap */
+  .hero-vignette { width: min(347px, calc(100vw - 2 * var(--margin))); }
+  .sr-bar,
+  .sr-for { max-width: 100%; }
+  .sr-hit { gap: 12px; }
+  .sr-hit-left { min-width: 0; }
+  .sr-hit-col { min-width: 0; max-width: 100%; }
+  .sr-hit-meta { max-width: 100%; overflow: hidden; }
+  .sr-hit-meta > span:first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+
+  /* the house sits way lower: both layers scale up and anchor to the
+     image top — identical values keep plate and cutout registered */
+  .hero,
+  .hero-fg {
+    background-size: auto 122%;
+    background-position: 50% 0%;
+  }
+
+  /* how-it-works goes mobile with the hero: visual above, list below */
+  .hiw { row-gap: 8px; } /* items carry their own 20px bands */
+  .hiw-h2 { grid-column: 1 / -1; margin-bottom: 28px; }
+  .hiw-visual { grid-column: 1 / -1; grid-row: auto; }
+  .hiw-list {
+    grid-column: 1 / -1;
+    grid-row: auto;
+    margin-left: 0;
+    max-width: none;
+  }
+  .hiw-img { height: 460px; }
+}
+
+/* tablet 2-up: a card left alone on its row centers instead of hugging left */
+@media (min-width: 641px) and (max-width: 900px) {
+  .svc-card:nth-child(odd):last-child { grid-column: 4 / 10; }
+}
+
+/* the two-column sections stack before their columns starve */
+@media (max-width: 900px) {
+  /* stacked, there is no image edge to meet — items keep natural height */
+
+
+  .svc-card { grid-column: span 6; }
+
+  .flag { row-gap: 40px; }
+  .flag-copy { grid-column: 1 / -1; }
+  .flag-visual { grid-column: 1 / -1; height: 380px; }
+
+  .nav-links { display: none; }
+  .lang { display: none; }
+  .nav-pill .btn-glass { display: none; } /* the CTA lives in the sheet */
+  .nav-burger { display: inline-flex; }
+}
+
+/* mobile */
+@media (max-width: 640px) {
+  /* the stage hugs the scaled composition instead of holding a viewport
+     of dead air around it */
+  .orb-sec .svc-orbit {
+    height: 440px;
+    min-height: 0;
+  }
+
+  /* the apply CTAs run full width, label left and arrow at the far edge */
+  .hero .btn-glass,
+  .flag-copy .btn-glass {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* the reference alignment: © rides the brand column, the mailto rides
+     the second link column */
+  /* on mobile the colophon leaves the wordmark and sits in flow,
+     under the link columns */
+  .footer-ascii-wrap {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 40px;
+  }
+  .footer-ascii-over {
+    position: static;
+    inset: auto;
+    display: flex;
+    justify-content: flex-start;
+    gap: 16px;
+    padding: 0;
+    font-size: 13px;
+    line-height: 18px;
+  }
+  :root {
+    --margin: 20px;
+    --gap-hero: 36px; /* copy rides high on small screens */
+    --text-h1: 28px;
+  }
+  .svc { padding: 48px var(--margin) 56px; }
+
+  /* frame math goes negative at this margin — pin the lines just inside */
+  .frame-lines::before { left: 8px; }
+  .frame-lines::after { right: 8px; }
+  .divider { margin-left: 8px; margin-right: 8px; }
+
+  /* hero: copy up top, the vignette left-aligned to the margin */
+  .hero-vignette {
+    left: var(--margin);
+    top: 310px; /* mobile's tighter copy ends higher */
+    margin-left: 0;
+  }
+
+  .art-stage { padding: 16px; }
+  .art-float { padding: 16px; }
+
+  /* services: each card becomes one contained surface — title up top,
+     the artifact field below (the reference's mobile cards) */
+  .svc-cards { margin-top: 32px; row-gap: 20px; }
+  .svc-card,
+  .svc-card.is-wide { grid-column: 1 / -1; }
+  /* every card carries its header inside the field now */
+  .svc-card-img.is-headed {
+    aspect-ratio: auto;
+    height: 400px;
+  }
+  .svc-card-inhead {
+  position: relative;
+  z-index: 1; /* above the floating artifact stage */
+  padding: 20px 20px 0;
+}
+.svc-card-img.is-headed .art-float { top: 84px; } /* artifact centers below the header */
+.svc-card-desc { max-width: none; }
+
+  /* proof: arrows give way to the swipe strip; caption stacks */
+  .svc-nav-arrows { display: none; }
+  .svc-caption {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .flag-visual { height: 340px; }
+
+  .footer { padding: 48px var(--margin) 0; gap: 40px; }
+  .footer-top { flex-direction: column; align-items: flex-start; gap: 32px; }
+  .footer-cols { gap: 40px; }
+}
+
+/* the mobile proof strip — native swipe, next card peeking, slightly small */
+.svc-mstrip {
+  display: flex;
+  gap: 12px;
+  margin: 40px calc(-1 * var(--margin)) 0;
+  padding: 0 var(--margin);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.svc-mstrip::-webkit-scrollbar { display: none; }
+.svc-mslide {
+  position: relative;
+  flex: 0 0 82%;
+  height: 340px;
+  scroll-snap-align: start;
+  scroll-margin-left: var(--margin);
+  background-size: cover;
+  background-position: 50%;
+  transition: scale 450ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.svc-mslide:not(.is-active) { scale: 0.94; }
