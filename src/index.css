@@ -961,8 +961,8 @@ body {
      are more ways to stop Chromium rendering the backdrop blur */
   overflow: clip;
   background: rgb(255 255 255 / 0.8); /* Paper's white glass: #FFFFFFCC */
-  backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
   font-family: var(--font-sans);
   font-weight: 500;
   color: #000000;
@@ -1210,8 +1210,8 @@ body {
   border-radius: 8px;
   background: color(display-p3 0.095 0.095 0.095 / 0.6); /* dark glass over the plate */
   border: var(--rule-w) solid var(--hairline-hero);
-  backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   font-size: 11px;
   line-height: 14px;
   font-weight: 400;
@@ -1358,8 +1358,8 @@ body {
   padding: 3px 8px;
   border-radius: 999px;
   background: color(display-p3 0.095 0.095 0.095 / 0.64);
-  backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   font-size: 10px;
   line-height: 14px;
   color: color(display-p3 1 1 1 / 0.9);
@@ -1743,8 +1743,8 @@ body {
      the hit-card blur family */
   border-radius: 0;
   background: color(display-p3 0.966 0.951 0.929 / 0.8);
-  backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
   color: var(--ink-cream);
   font-family: var(--font-sans);
   font-size: 13px;
