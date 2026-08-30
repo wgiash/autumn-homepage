@@ -64,7 +64,7 @@
   /* spacing / structure */
   --margin: 120px;      /* artboard px-30 */
   --nav-h: 60px;        /* artboard h-15 */
-  --gap-hero: 120px;    /* root gap-30: nav → copy block */
+  --gap-hero: 72px;     /* was Paper's gap-30 (120) — lifted to sit higher */
   --gap-copy: 24px;     /* copy block: text group → button (Paper gap-6) */
   --gap-copy-text: 16px; /* h1 → sub inside the text group (Paper gap-4) */
   --gap-nav-groups: 48px;
@@ -78,7 +78,7 @@
   --hero-dim: 0.18;
 
   /* overall scale of the search vignette — one number, crisp re-layout */
-  --vignette-scale: 1.15;
+  --vignette-scale: 1; /* no zoom anywhere — only the bar itself is enlarged */
 
   /* plain artifact field — one step warmer than the page */
   --field: color(display-p3 0.087 0.078 0.072); /* lifted off #131010, a half-step darker than before, same warm lean */
@@ -151,8 +151,8 @@ body {
   /* zoom scales offsets too — divide them out so the visual position holds:
      top edge aligns with the headline's top at any scale */
   right: calc(165px / var(--vignette-scale));
-  /* a touch above the headline's top on desktop and tablet */
-  top: calc((var(--nav-h) + var(--gap-hero) - 24px) / var(--vignette-scale));
+  /* flush with the headline's top on desktop and tablet */
+  top: calc((var(--nav-h) + var(--gap-hero)) / var(--vignette-scale));
   width: 347px;
   zoom: var(--vignette-scale); /* re-lays out at scale — text stays crisp */
 }
@@ -183,9 +183,9 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  width: 300px;
-  height: 34px; /* fixed — the box never breathes between states */
-  padding: 8px 12px;
+  width: 100%; /* spans the stack, matching the result cards' width */
+  height: 38px; /* fixed — the box never breathes between states */
+  padding: 9px 13px;
   border-radius: 999px;
   /* hairline as an inset shadow — a real border eats into the fixed box
      and clips the 18px text line */
@@ -195,8 +195,8 @@ body {
      white query reads over the bright sky band */
   background: color(display-p3 0.095 0.095 0.095 / 0.45);
   overflow: clip;
-  font-size: 14px;
-  line-height: 18px;
+  font-size: 15px;
+  line-height: 20px;
   color: var(--ink-hero);
 }
 /* results line — item zero of the cascade (frame 3's w-75 py-1 blur-32) */
@@ -204,7 +204,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  width: 300px;
+  align-self: stretch;
   padding: 4px 0;
   border-radius: 999px;
   font-size: 13.5px; /* was 12 — read too tiny, especially on mobile */
@@ -225,7 +225,7 @@ body {
   justify-content: space-between;
   gap: 8px;
   min-width: 0;
-  height: 18px; /* one text line — inline-block fade segments can't stretch it */
+  height: 20px; /* one text line — inline-block fade segments can't stretch it */
   overflow: clip;
   color: color(display-p3 1 1 1); /* the typed query reads full-strength */
 }
@@ -256,7 +256,7 @@ body {
   position: absolute;
   /* window centered on the line's 300px width; only the center seat is
      fully opaque — neighbors half-fade, and beyond them nothing */
-  left: 40px;
+  left: calc(50% - 110px);
   top: 36px;
   width: 220px;
   overflow: hidden;
@@ -307,8 +307,10 @@ body {
   font-weight: 500;
   font-size: 14px;
   line-height: 18px;
+  white-space: nowrap;
   color: var(--ink-hero);
 }
+
 .sr-hit-meta {
   display: flex;
   align-items: center;
@@ -1701,7 +1703,7 @@ body {
   color: color(display-p3 1 1 1 / 64%);
 }
 .flag-note {
-  margin: 0;
+  margin: -12px 0 0; /* the disclaimer rides the button, not the 24px copy gap */
   font-size: 13px;
   line-height: 16px;
   font-weight: 400;
@@ -1974,11 +1976,19 @@ body {
   :root { --margin: 64px; }
 }
 
+/* while the window is actively resizing, every css transition snaps —
+   crossing a breakpoint lands atomically instead of tweening through
+   mismatched states */
+.is-resizing *,
+.is-resizing *::before,
+.is-resizing *::after {
+  transition: none !important;
+}
+
 /* tablet */
 @media (max-width: 1024px) {
   :root {
     --margin: 40px;
-    --gap-hero: 96px;
   }
   .svc { padding: 64px var(--margin) 72px; }
   /* internal rhythms scale with the section, not just its shell */
@@ -1987,7 +1997,6 @@ body {
   .orb-latch { margin-top: 28px; }
 
   .hero-vignette {
-    --vignette-scale: 1;
     /* margin-anchored — the 165px desktop offset would cross the headline */
     right: calc(var(--margin) / var(--vignette-scale));
   }
@@ -1996,18 +2005,24 @@ body {
 /* hero goes mobile at the standard 768: the animation drops below the
    copy and left-aligns to the margin */
 @media (max-width: 768px) {
-  :root { --gap-hero: 48px; }
   .hero-vignette {
     --vignette-scale: 1;
     right: auto;
     left: var(--margin);
-    top: 366px; /* the tablet copy block runs taller than mobile's */
+    top: 375px; /* 56 under the tablet copy block (gap-hero 72 everywhere above 640) */
     margin-left: 0;
   }
   /* the stage never exceeds the viewport; contents truncate, never wrap */
   .hero-vignette { width: min(347px, calc(100vw - 2 * var(--margin))); }
   .sr-bar,
   .sr-for { max-width: 100%; }
+  /* searching reads like the results header: from the line origin, the
+     conveyor fading out only toward the right */
+  .sr-providers {
+    left: 0;
+    mask-image: linear-gradient(90deg, black, black 55%, rgb(0 0 0 / 0.22) 82%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, black, black 55%, rgb(0 0 0 / 0.22) 82%, transparent);
+  }
   .sr-hit { gap: 12px; }
   .sr-hit-left { min-width: 0; }
   .sr-hit-col { min-width: 0; max-width: 100%; }
@@ -2060,6 +2075,32 @@ body {
   .lang { display: none; }
   .nav-pill .btn-glass { display: none; } /* the CTA lives in the sheet */
   .nav-burger { display: inline-flex; }
+  .nav-menu .btn-glass {
+    width: 100%;
+    padding: 12px 14px;
+    justify-content: space-between;
+  }
+  /* a touch more presence than desktop's 8/12 on touch screens */
+  .hero-copy .btn-glass,
+  .flag-copy .btn-glass { padding: 10px 14px; }
+}
+
+/* the apply CTAs go full width on true phone widths only: label left,
+   arrow at the far edge, margin to margin. The copy column stretches to
+   the body's edges so the button is container-bound (no viewport math);
+   the text keeps Paper's 246px measure so nothing rewraps. */
+@media (max-width: 480px) {
+  .hero-copy {
+    width: auto;
+    align-self: stretch;
+  }
+  .hero-copy .hero-text { max-width: var(--copy-w); }
+  .hero-copy .btn-glass,
+  .flag-copy .btn-glass {
+    width: 100%;
+    padding: 12px 14px;
+    justify-content: space-between;
+  }
 }
 
 /* mobile */
@@ -2069,13 +2110,6 @@ body {
   .orb-sec .svc-orbit {
     height: 440px;
     min-height: 0;
-  }
-
-  /* the apply CTAs run full width, label left and arrow at the far edge */
-  .hero .btn-glass,
-  .flag-copy .btn-glass {
-    width: 100%;
-    justify-content: space-between;
   }
 
   /* the reference alignment: © rides the brand column, the mailto rides
@@ -2112,7 +2146,7 @@ body {
   /* hero: copy up top, the vignette left-aligned to the margin */
   .hero-vignette {
     left: var(--margin);
-    top: 310px; /* mobile's tighter copy ends higher */
+    top: 330px; /* mobile's tighter copy ends higher — ~40 to the animation */
     margin-left: 0;
   }
 

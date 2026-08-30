@@ -156,13 +156,20 @@ export function SearchVignette() {
         : { duration: 0 },
   }) as const
 
-  /* "Searching" centers on the line's 300px width, then slides to the
-     line origin before transforming into the count */
+  /* "Searching" centers on the line's real width — except on mobile,
+     where it seats at the line origin like the results header */
   const searchRef = useRef<HTMLSpanElement | null>(null)
   const [centerX, setCenterX] = useState(122)
   useEffect(() => {
-    if (phase === 'searching' && searchRef.current)
-      setCenterX((300 - searchRef.current.offsetWidth) / 2)
+    const el = searchRef.current
+    if (phase !== 'searching' || !el) return
+    if (window.matchMedia('(max-width: 768px)').matches) {
+      setCenterX(0)
+      return
+    }
+    const line = el.closest('.sr-for')
+    const lineW = line ? line.clientWidth : 300
+    setCenterX((lineW - el.offsetWidth) / 2)
   }, [phase])
 
   /* pill width animates as a number, measured off a hidden sizer holding
@@ -313,7 +320,7 @@ export function SearchVignette() {
             <div className="sr-hit-col">
               <p className="sr-hit-name">{sc.hit.name}</p>
               <div className="sr-hit-meta">
-                <span>{sc.hit.place}</span>
+                <span>Suggested</span>
                 <span className="sr-rating">{sc.hit.rating} <Star /> <span className="sr-count">{sc.hit.reviews}</span></span>
               </div>
             </div>
@@ -370,6 +377,11 @@ export function SearchVignette() {
 const PROVIDER_SLOT = 76 /* icon 24 + gap 52 */
 function ProviderStrip() {
   const [step, setStep] = useState(0)
+  /* the seat: the window's center — or its left edge on mobile, where the
+     conveyor aligns to the line origin like the results header */
+  const [seat] = useState(() =>
+    window.matchMedia('(max-width: 768px)').matches ? 0 : 98
+  )
   useEffect(() => {
     const timers: number[] = []
     for (let k = 1; k < PROVIDERS.length; k++)
@@ -379,10 +391,9 @@ function ProviderStrip() {
   return (
     <motion.div
       className="sr-providers-strip"
-      /* the active slot holds the window's center seat; each hop brings
-         the next provider into it */
-      animate={{ x: 98 - step * PROVIDER_SLOT }}
-      initial={{ x: 98 }}
+      /* the active slot holds the seat; each hop brings the next provider */
+      animate={{ x: seat - step * PROVIDER_SLOT }}
+      initial={{ x: seat }}
       transition={{ duration: 0.35, ease: EASE }}
     >
       {PROVIDERS.map((p) => (

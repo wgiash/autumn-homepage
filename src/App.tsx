@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Hero } from './components/Hero'
 import { Statement } from './components/Statement'
 import { HowItWorks } from './components/HowItWorks'
@@ -15,6 +16,21 @@ function Divider({ full = false }: { full?: boolean }) {
 
 function App() {
   useLenis()
+  /* while the window is actively resizing, transitions snap — a breakpoint
+     crossing lands atomically instead of tweening through mismatched states */
+  useEffect(() => {
+    let t = 0
+    const onResize = () => {
+      document.documentElement.classList.add('is-resizing')
+      clearTimeout(t)
+      t = window.setTimeout(() => document.documentElement.classList.remove('is-resizing'), 150)
+    }
+    window.addEventListener('resize', onResize)
+    return () => {
+      window.removeEventListener('resize', onResize)
+      clearTimeout(t)
+    }
+  }, [])
   return (
     <>
       <div className="frame-lines">
