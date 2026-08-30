@@ -1164,8 +1164,8 @@ body {
   flex-direction: column;
   align-items: stretch;
   gap: 10px;
-  padding-top: 10px; /* matches the main row's seat above the rule */
-  padding-bottom: 14px;
+  /* one even inset — the base hit's asymmetric seat reads lopsided here */
+  padding: 14px;
 }
 .sr-hit.is-expanded .sr-hit-meta { font-size: 12px; } /* a kicker, not a second headline */
 .sr-hit-main {
